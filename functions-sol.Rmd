@@ -1,0 +1,123 @@
+---
+title: "functions-sol"
+author: "Anastasiia Holovchak"
+date: "20 11 2020"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+a)  Schreiben Sie die folgenden verwirrenden Funktionsaufrufe so um dass sie möglichst klar & einfach zu verstehen sind:
+
+```{r, 1a, eval=FALSE}
+set.seed(20141012)
+x <- sample(x = c(1:10, NA), size = 20, replace = TRUE)
+y <- runif(n = 20, min = 0, max = 1) # min and max set to default
+cor(x = x, y = y, use = "pairwise.complete.obs", method = "kendall")
+```
+
+b)  Was gibt diese Funktion zurück? Warum? Welches Prinzip illustriert sie?
+
+```{r, 1b, eval=FALSE}
+f1 <- function(x = {
+    y <- 1
+    2
+  }, y = 0) {
+  x + y
+}
+```
+
+Die Funktion `f1()` gibt den Wert `3` zurück, falls keine Parameter übergeben werden.
+Es liegt daran, dass dem Parameter `y` der Wert `1` zugewiesen wird, und dem 
+Parameter `y` - der Wert `2` (das passiert alles innerhalb der Definition des
+Parameters `x`). Zur Zuweisung vom Wert `1` dem Parameter `y` kommt es in diesem
+Fall gar nicht - dies entspricht dem Prinzip von 'Lazy Evaluation'.
+
+Wird der Funktion `f1()` ein Wert für das Parameter `x` vom User übergeben, liefert
+diese Funktion das Ergebnis vom Typ `x + 1`zurück, da `y` immer noch der Wert `1`
+zugewiesen wird. Werden beide Parameter `x`und `y`vom User übergeben, so liefert
+die Funktion einfach die Summe beider Variablen als Rückgabewert.
+
+
+*Hinweis:* Was passiert wenn Sie die letzte Zeile mit `y + x` ersetzen? Mit `c(y, x, y)`?
+
+Falls man die die letzte Zeile mit `y + x` ersetzt, so wird zuerst der Wert von
+`y`aufgesucht (und dieser wurde per default auf 0 gesetzt). Danach wird nach dem
+Parameter `x` gesucht, dem der Wert `2` zugewiesen wird. Jetzt wird die Zuweisung
+`y <- 1´ignoriert, und das Ergebnis von `f1()` ist  `2`.
+
+Ersetzt man die letzte Zeile mit `c(y, x, y)`, so lautet das Ergebnis von `f1()`
+`0, 2, 1`. Es wird also zuerst nach dem Wert von y gesucht (dieser ist 0), danach
+wird nach dem Wert von `x` gesucht. Dabei passiert aber die Zuweisung vom Wert `1`
+der Variable `y`und dadurch bekommen wird `0 2 1` als Ergebnis von `f1()`.
+
+Anmerkung: im Fall mit `y + x` wurde der Wert von `y` bei der Auswertung von `x`
+zwar auch überschrieben, der neue Wert wurde aber nicht benutzt.
+
+c)  Was gibt diese Funktion zurück? Warum? Welches Prinzip illustriert sie?
+
+```{r, 1c, eval=FALSE}
+f2 <- function(x = z) {
+  z <- 100
+  x
+}
+```
+
+Die Funktion hat den Rückgabewert 100. Dem Inputparameter `x` wird zwar der Wert
+von der Variable `z` zugewiesen, die vorher nicht definiert wurde. Es stellt aber
+kein Problem dar, da die Variable `x` erst benötigt wird, nachdem in `body()` der
+Funktion der Variable `z` der Wert `100` zugewiesen wurde. Somit bekommt `x` auch
+den Wert von 100. Dies entspricht wiederum dem Prinzip von 'Lazy Evaluation'. 
+
+Rufen wir die Funktion jedoch mit Übergabe eines bestimmten 
+Wertes für `x` auf, so wird dieser Wert von der Funktion zurückgeliefert.
+
+d)  Schreiben sie eine *infix*-Funktion `%xor%` für `logical`-inputs die eine XOR-Operation (entweder-oder-aber-nicht-beides) durchführt. Überprüfen Sie ihre Funktion mit den folgenden Tests:
+
+```{r, 1d, eval=FALSE}
+`%xor%` <- function(x, y) {
+  assert_logical(x)
+  assert_logical(y)
+  (x | y) & !(x & y)
+}
+```
+
+```{r, code = readLines("test-functions-xor.R"), eval=FALSE}
+```
+
+Durch die Tests kam die Funktion durch.
+
+e)  Wie kann jeweils der Zustand von `options()` und `par()` abgespeichert und wiederhergestellt werden?
+
+```{r, 1e, eval=FALSE}
+old_options <- options()
+options(old_options)
+
+old_par <- par(no.readonly = TRUE)
+par(old_par)
+
+# ODER: on.exit in der Funktion benutzen
+on.exit(c(options(old_options), par(old_par)))
+```
+
+f)  Schreiben Sie eine Funktion die ein neues PDF-Grafikdevice öffnet, `plot` mit den übergebenen Argumenten aufruft und dann das zuvor geöffnete Grafikfenster wieder schließt, egal ob die übergebenen Argumente für `plot` funktioniert haben oder nicht.
+
+```{r, 1e, eval=FALSE}
+f3 <- function(...) {
+  plot(...)
+  on.exit(dev.off())
+}
+```
+
+g)  Was gibt der folgende Code zurück? Warum? Was bedeuten die drei verschiedenen `c`s in der zweiten Zeile?
+
+```{r, 1g, eval=FALSE}
+c <- 10
+c(c = c)
+```
+
+Der Code gibt einen Vektor mit einem Eintrag Namens `c` und dem Wert `10` zurück.
+Das erste `c` bezieht sich auf die Funktion `c()`aus dem Paket `base`, mit dem 
+zweiten `c` wird dem ersten Eintrag des Vektors der Name zugewiesen und das dritte
+`c` steht für die Gleichsetzung des ersten Eintrags des Vektors mit der Wert der
+oben definierten gleichnamigen Variable `c`.
